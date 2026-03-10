@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Usuario</title>
+    <!-- Tailwind CSS para el diseño -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* Pequeña animación para el botón de carga */
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex items-center justify-center p-4 font-sans">
+
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+        <!-- Encabezado de la tarjeta -->
+        <div class="bg-indigo-600 p-6 text-center">
+            <i data-lucide="user-plus" class="mx-auto text-white w-12 h-12 mb-2"></i>
+            <h2 class="text-2xl font-bold text-white">Crea tu cuenta</h2>
+            <p class="text-indigo-200 text-sm mt-1">Ingresa tus datos para registrarte</p>
+        </div>
+
+        <!-- Formulario -->
+        <div class="p-8">
+            <form id="registroForm" class="space-y-5">
+                
+                <!-- Campo: Nombre -->
+                <div>
+                    <label for="Nombre" class="block text-sm font-medium text-gray-700 mb-1">Nombre completo</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i data-lucide="user" class="h-5 w-5 text-gray-400"></i>
+                        </div>
+                        <input type="text" id="Nombre" name="Nombre" required
+                            class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                            placeholder="Ej. Juan Pérez">
+                    </div>
+                </div>
+
+                <!-- Campo: Teléfono -->
+                <div>
+                    <label for="Telefono" class="block text-sm font-medium text-gray-700 mb-1">Número de teléfono</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i data-lucide="phone" class="h-5 w-5 text-gray-400"></i>
+                        </div>
+                        <input type="tel" id="Telefono" name="Telefono" required
+                            class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                            placeholder="Ej. 55 1234 5678">
+                    </div>
+                </div>
+
+                <!-- Campo: Correo -->
+                <div>
+                    <label for="Correo" class="block text-sm font-medium text-gray-700 mb-1">Correo electrónico</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i data-lucide="mail" class="h-5 w-5 text-gray-400"></i>
+                        </div>
+                        <input type="email" id="Correo" name="Correo" required
+                            class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                            placeholder="ejemplo@correo.com">
+                    </div>
+                </div>
+
+                <!-- Botón Enviar -->
+                <button type="submit" id="btnSubmit"
+                    class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors flex justify-center items-center focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-70 disabled:cursor-not-allowed">
+                    <i data-lucide="loader-2" id="spinner" class="animate-spin -ml-1 mr-2 h-5 w-5 hidden"></i>
+                    <span id="btnText">Registrarme</span>
+                </button>
+            </form>
+
+            <!-- Contenedor de Mensajes (Éxito o Error) -->
+            <div id="mensaje" class="mt-4 text-center text-sm font-medium p-3 rounded-lg hidden transition-all duration-300">
+            </div>
+        </div>
+    </div>
+
+    <!-- Inicializar Iconos -->
+    <script>
+        lucide.createIcons();
+    </script>
+
+    <!-- Lógica del Formulario -->
+    <script>
+        // =========================================================================
+        // URL de tu Google Apps Script
+        // =========================================================================
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbyUo3i_K84L5xZ9wq5kz37FyPEcSS4agjJl5L1-pLYywEGpoMTnYnX2Nmth9AlfvyE3/exec'; 
+
+        const form = document.getElementById('registroForm');
+        const btnSubmit = document.getElementById('btnSubmit');
+        const btnText = document.getElementById('btnText');
+        const spinner = document.getElementById('spinner');
+        const mensaje = document.getElementById('mensaje');
+
+        form.addEventListener('submit', e => {
+            e.preventDefault(); // Evita que la página se recargue
+
+            // Cambiar estado del botón a "Cargando"
+            btnSubmit.disabled = true;
+            btnText.textContent = 'Guardando...';
+            spinner.classList.remove('hidden');
+            mensaje.classList.add('hidden');
+
+            // Recolectar los datos del formulario
+            const formData = new FormData(form);
+
+            // Enviar datos a Google Sheets usando Fetch API
+            fetch(scriptURL, { method: 'POST', body: formData })
+                .then(response => {
+                    mostrarMensaje('¡Registro exitoso! Tus datos han sido guardados.', 'success');
+                    form.reset(); // Limpiar el formulario
+                })
+                .catch(error => {
+                    mostrarMensaje('Hubo un error de conexión al registrar. Inténtalo de nuevo.', 'error');
+                    console.error('Error!', error.message);
+                })
+                .finally(() => {
+                    // Restaurar el botón
+                    btnSubmit.disabled = false;
+                    btnText.textContent = 'Registrarme';
+                    spinner.classList.add('hidden');
+                });
+        });
+
+        // Función auxiliar para mostrar mensajes en pantalla
+        function mostrarMensaje(texto, tipo) {
+            mensaje.textContent = texto;
+            if (tipo === 'success') {
+                mensaje.className = 'mt-4 text-center text-sm font-medium p-3 rounded-lg bg-green-100 text-green-700';
+            } else {
+                mensaje.className = 'mt-4 text-center text-sm font-medium p-3 rounded-lg bg-red-100 text-red-700';
+            }
+            mensaje.classList.remove('hidden');
+            
+            // Ocultar mensaje después de 6 segundos
+            setTimeout(() => {
+                mensaje.classList.add('hidden');
+            }, 6000);
+        }
+    </script>
+</body>
+</html>
